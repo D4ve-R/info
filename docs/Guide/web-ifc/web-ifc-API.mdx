@@ -133,6 +133,10 @@ IfcAPI.openModel(data: Uint8Array,
 - `data`: Buffer containing IFC `data`.
 - `settings`: `settings` for loading the model.
 
+#### Returns: 
+
+- `modelID`: Model handle
+
 #### Example:
 
 ```js
@@ -151,6 +155,10 @@ IfcAPI.CreateModel(settings: LoaderSettings): number
 #### Arguments:
 
 - `settings`: Creates a new model and returns a `modelID` number.
+
+#### Returns:
+
+- `modelID`: Model handle
 
 #### Example:
 
@@ -365,12 +373,16 @@ Write a line data using `modelID` and `data`
 ### GetAllLines
 
 ```js
-IfcAPI.GetAllLines(modelID: Number): Vector
+IfcAPI.GetAllLines(modelID: number): Vector<number>
 ```
 
 #### Arguments:
 
-- `modelID`: Express ID of model
+- `modelID`: Model handle retrieved by `OpenModel`
+
+#### Returns: 
+
+- `Vector<number>`: Vector of expressIDs
 
 #### Example:
 
@@ -482,20 +494,24 @@ Get `index` of `Array`using `ptr` and `size`.
 ### GetLine
 
 ```js
-IfcAPI.GetLine(modelID: number, expressID; number,
-                flatten: boolean)
+IfcAPI.GetLine(modelID: number, expressID: number, flatten?: boolean): any
 ```
 
 #### Arguments:
 
 - `modelID`: Model handle retrieved by `OpenModel`.
-- `expressID`: `expressID` of model.
-- `flatten`: Set whether it is `flatten` or not.
+- `expressID`: expressID of IFC entity.
+- `flatten`: defaults to `false`, recursively resolve attributes that are nested IFC entities 
 
 #### Example:
 
 ```js
-const props = IfcAPI.GetLine(modelID, id, (flatten = false));
+const id = 123;
+const entity = IfcAPI.GetLine(modelID, id);
+// {expressID: 123, ..., ExampleAttr: {type: 5, value: 456}}
+
+const entityFlat = IfcAPI.GetLine(modelID, id, true);
+// {expressID: 123, ..., ExampleAttr: {expressID: 456, ...}}
 ```
 
 ⏩
@@ -504,18 +520,30 @@ Get the line using the modelID and expressID
 ### GetLineIdsWithType
 
 ```js
-IfcAPI.GetLineIdsWithType(modelId: number, type: number): Vector
+IfcAPI.GetLineIdsWithType(modelId: number, type: number, includeInherited?: boolean): Vector<number>
 ```
 
 #### Arguments:
 
-- `modelID`: `expressID` of ifcModel
-- `type`: Set of get `type`
+- `modelID`: Model handle retrieved by `OpenModel`
+- `type`: type of IFC entity, see [here](https://github.com/IFCjs/web-ifc/blob/main/src/ifc-schema.ts)
+- `includeInherited`: defaults to `false`
+
+#### Returns: 
+
+- `Vector<number>`: Vector of expressIDs with `type`
 
 #### Example:
 
 ```js
-const lines = IfcAPI.GetLineIDsWithType(modelID, type);
+import { IFCWALL } from 'web-ifc';
+
+const lines = IfcAPI.GetLineIDsWithType(modelID, IFCWALL);
+
+for(let i = 0; i < lines.size(); ++i){
+  // expressID of IFC entity with type IFCWALL
+  const expressId = lines.get(i);
+}
 ```
 
 🧻
